@@ -1,4 +1,4 @@
-name: Пост Трейдинг (тест с детальной ошибкой)
+name: Пост Трейдинг (полный лог ошибки)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
       - name: Отправка фото
         run: |
           python3 << 'PYEOF'
-          import json, urllib.request
+          import json, urllib.request, sys
 
           TOKEN = "8664485659:AAHP0QkuqUg2rFW1McDrqVrKXcQHgHAOw-c"
           CHAT_ID = "-1004125779446"
@@ -67,11 +67,24 @@ jobs:
               if result.get("ok"):
                   print(f"✅ Пост отправлен, message_id={result['result']['message_id']}")
               else:
-                  print(f"❌ Ошибка API: {result}")
+                  print(f"❌ Ошибка API: {json.dumps(result, indent=2, ensure_ascii=False)}")
           except urllib.error.HTTPError as e:
               error_body = e.read().decode()
-              print(f"❌ Ошибка API Telegram: {e.code} {e.reason}")
+              print(f"❌ HTTP {e.code} {e.reason}")
               print(f"Тело ответа: {error_body}")
+              # Сохраняем в файл для гарантированного вывода
+              with open("error.txt", "w") as f:
+                  f.write(f"HTTP {e.code} {e.reason}\n{error_body}")
           except Exception as e:
               print(f"❌ Исключение: {e}")
           PYEOF
+
+      - name: Показать файл ошибки (если есть)
+        if: failure()
+        run: |
+          if [ -f error.txt ]; then
+            echo "=== ТЕЛО ОШИБКИ ==="
+            cat error.txt
+          else
+            echo "Файл ошибки не создан"
+          fi
