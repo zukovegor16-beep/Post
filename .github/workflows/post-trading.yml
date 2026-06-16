@@ -1,4 +1,4 @@
-name: Пост Трейдинг (полный лог ошибки)
+name: Пост Трейдинг (тест с проверенной картинкой)
 
 on:
   workflow_dispatch:
@@ -16,7 +16,8 @@ jobs:
           CHAT_ID = "-1004125779446"
           BASE = f"https://api.telegram.org/bot{TOKEN}"
 
-          photo_url = "https://s10.iimage.su/s/16/g1ADdtgxzCjR4BHC11zqnRSKkTmZube97ChmdeNno.jpg"
+          # Временная картинка (проверенная, прямая ссылка)
+          photo_url = "https://litter.catbox.moe/ae5snp.jpeg"
 
           caption = (
               '<b>ТГ-канал с обучением трейдингу</b> <tg-emoji emoji-id="5431449001532594346">⚡️</tg-emoji>\n'
@@ -72,19 +73,4 @@ jobs:
               error_body = e.read().decode()
               print(f"❌ HTTP {e.code} {e.reason}")
               print(f"Тело ответа: {error_body}")
-              # Сохраняем в файл для гарантированного вывода
-              with open("error.txt", "w") as f:
-                  f.write(f"HTTP {e.code} {e.reason}\n{error_body}")
-          except Exception as e:
-              print(f"❌ Исключение: {e}")
           PYEOF
-
-      - name: Показать файл ошибки (если есть)
-        if: failure()
-        run: |
-          if [ -f error.txt ]; then
-            echo "=== ТЕЛО ОШИБКИ ==="
-            cat error.txt
-          else
-            echo "Файл ошибки не создан"
-          fi
