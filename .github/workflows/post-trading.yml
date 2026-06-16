@@ -1,4 +1,4 @@
-name: Пост Трейдинг (тест)
+name: Пост Трейдинг (тест с детальной ошибкой)
 
 on:
   workflow_dispatch:
@@ -56,18 +56,22 @@ jobs:
               "reply_markup": keyboard
           }
 
-          req = urllib.request.Request(
-              f"{BASE}/sendPhoto",
-              data=json.dumps(payload).encode("utf-8"),
-              headers={"Content-Type": "application/json"}
-          )
           try:
+              req = urllib.request.Request(
+                  f"{BASE}/sendPhoto",
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={"Content-Type": "application/json"}
+              )
               with urllib.request.urlopen(req) as resp:
                   result = json.loads(resp.read().decode())
               if result.get("ok"):
                   print(f"✅ Пост отправлен, message_id={result['result']['message_id']}")
               else:
                   print(f"❌ Ошибка API: {result}")
+          except urllib.error.HTTPError as e:
+              error_body = e.read().decode()
+              print(f"❌ Ошибка API Telegram: {e.code} {e.reason}")
+              print(f"Тело ответа: {error_body}")
           except Exception as e:
               print(f"❌ Исключение: {e}")
           PYEOF
